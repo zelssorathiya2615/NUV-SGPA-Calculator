@@ -4,28 +4,8 @@ from telegram.ext import Application, CommandHandler, ContextTypes
 from dotenv import load_dotenv
 load_dotenv()
 
-import os
-from flask import Flask
 
-app = Flask(__name__)
 
-@app.route('/')
-def home():
-    return "Bot is running!"
-
-if __name__ == "__main__":
-    # Run both Flask app and the Telegram bot
-    from threading import Thread
-
-    def run_bot():
-        main()  # Start your Telegram bot (defined in your script)
-
-    # Start Flask server in a thread
-    Thread(target=run_bot).start()
-
-    # Bind to the PORT environment variable provided by Render
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
 
 
 
