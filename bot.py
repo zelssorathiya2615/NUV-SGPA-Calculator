@@ -2,20 +2,32 @@ from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes
 
 from dotenv import load_dotenv
-import os
-from flask import Flask
-import asyncio
-from threading import Thread
-
-# Load environment variables
 load_dotenv()
 
-# Create Flask app
+import os
+from flask import Flask
+
 app = Flask(__name__)
 
 @app.route('/')
 def home():
     return "Bot is running!"
+
+if __name__ == "__main__":
+    # Run both Flask app and the Telegram bot
+    from threading import Thread
+
+    def run_bot():
+        main()  # Start your Telegram bot (defined in your script)
+
+    # Start Flask server in a thread
+    Thread(target=run_bot).start()
+
+    # Bind to the PORT environment variable provided by Render
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
+
+
 
 # Replace with your bot token
 TOKEN = "8191348054:AAEcRjlqf5U0hbQvKU4KOfBEOxVw84Y6IV4"
@@ -158,8 +170,8 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "🔄 Process canceled. You can start again by typing /start."
     )
 
-# Main function to run the bot and Flask server
-async def main():
+# Main function
+def main():
     # Initialize the application
     application = Application.builder().token(TOKEN).build()
 
@@ -171,15 +183,7 @@ async def main():
 
     # Start the bot
     print("SGPA Calculation Bot is running...")
-    await application.run_polling()
+    application.run_polling()
 
-# Run both Flask app and Telegram bot
 if __name__ == "__main__":
-    # Run Flask in the main thread and the Telegram bot asynchronously
-    loop = asyncio.get_event_loop()
-
-    # Start Flask server in a separate thread
-    Thread(target=lambda: app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))).start()
-
-    # Run the bot on the asyncio loop
-    loop.run_until_complete(main())
+    main()
