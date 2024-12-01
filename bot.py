@@ -6,28 +6,7 @@ load_dotenv()
 
 import os
 from flask import Flask
-
-app = Flask(__name__)
-
-@app.route('/')
-def home():
-    return "Bot is running!"
-
-if __name__ == "__main__":
-    # Run both Flask app and the Telegram bot
-    from threading import Thread
-
-    def run_bot():
-        main()  # Start your Telegram bot (defined in your script)
-
-    # Start Flask server in a thread
-    Thread(target=run_bot).start()
-
-    # Bind to the PORT environment variable provided by Render
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
-
-
+from threading import Thread
 
 # Replace with your bot token
 TOKEN = "8191348054:AAEcRjlqf5U0hbQvKU4KOfBEOxVw84Y6IV4"
@@ -170,7 +149,7 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "🔄 Process canceled. You can start again by typing /start."
     )
 
-# Main function
+# Main function to start the bot
 def main():
     # Initialize the application
     application = Application.builder().token(TOKEN).build()
@@ -185,5 +164,17 @@ def main():
     print("SGPA Calculation Bot is running...")
     application.run_polling()
 
+# Flask setup
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return "Bot is running!"
+
 if __name__ == "__main__":
-    main()
+    # Start both Flask app and the Telegram bot
+    Thread(target=main).start()
+
+    # Bind Flask app to the PORT environment variable provided by Render
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
