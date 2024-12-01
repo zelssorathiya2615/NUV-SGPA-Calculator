@@ -4,12 +4,6 @@ from telegram.ext import Application, CommandHandler, ContextTypes
 from dotenv import load_dotenv
 load_dotenv()
 
-
-
-
-
-
-# Replace with your bot token
 TOKEN = "8191348054:AAEcRjlqf5U0hbQvKU4KOfBEOxVw84Y6IV4"
 
 # Global dictionary to store user data
