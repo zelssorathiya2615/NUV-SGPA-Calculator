@@ -145,12 +145,6 @@ Math            4.00     85.00    A      3.60
 
 ---
 
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
 ## 🛡️ Security
 
 If you discover any security-related issues, please report them via email at `sorathiyazels@gmail.com`.
@@ -161,7 +155,7 @@ If you discover any security-related issues, please report them via email at `so
 
 For any inquiries, feedback, or support, feel free to reach out to me via my portfolio website:
 
-[Your Portfolio Website](https://zelssorathiya2615.github.io/Zels-Sorathiya/)
+[Zels Sorathiya](https://zelssorathiya2615.github.io/Zels-Sorathiya/)
 
 
 ---
