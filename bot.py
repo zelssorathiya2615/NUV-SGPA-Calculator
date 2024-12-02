@@ -53,9 +53,17 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_data[user_id] = []
     await update.message.reply_text(
         "🎓 Welcome to the SGPA Calculator Bot!\n\n"
-        "Use `/collect_subject_details <subject_name> <credits> <marks_out_of_100>` to add subject details.\n"
-        "Type `/calculate_sgpa` to compute your SGPA.\n"
-        "Type `/cancel` to restart."
+        "Here's how I can help you:\n"
+        "1️⃣ Enter subject details one by one.\n"
+        "2️⃣ I will calculate your SGPA based on the data.\n\n"
+        "👉 **Input Format:**\n"
+        "Use the command:\n"
+        "`/collect_subject_details <subject_name> <credits> <marks_out_of_100>`\n\n"
+        "📝 **Example:**\n"
+        "`/collect_subject_details Math 4 85`\n\n"
+        "📌 Type `/calculate_sgpa` to compute your SGPA after entering all subjects.\n"
+        "Type `/cancel` at any time to restart.",
+        parse_mode="Markdown"
     )
 
 async def collect_subject_details(update: Update, context: ContextTypes.DEFAULT_TYPE):
