@@ -1,10 +1,9 @@
 from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes
 
-from dotenv import load_dotenv
-load_dotenv()
-
+# Constants
 TOKEN = "8191348054:AAEcRjlqf5U0hbQvKU4KOfBEOxVw84Y6IV4"
+WEBHOOK_URL = "https://nuv-sgpa-calculator.onrender.com"
 
 # Global dictionary to store user data
 user_data = {}
@@ -12,28 +11,28 @@ user_data = {}
 # Grading scale based on marks
 def get_earned_grade_points(marks, credits):
     if marks >= 90:
-        grade_points = credits * 1  # A+ -> 100% of credits
+        grade_points = credits * 1
         grade = 'A+'
     elif marks >= 80:
-        grade_points = credits * 0.9  # A -> 90% of credits
+        grade_points = credits * 0.9
         grade = 'A'
     elif marks >= 71:
-        grade_points = credits * 0.8  # A- -> 80% of credits
+        grade_points = credits * 0.8
         grade = 'A-'
     elif marks >= 61:
-        grade_points = credits * 0.7  # B+ -> 70% of credits
+        grade_points = credits * 0.7
         grade = 'B+'
     elif marks >= 56:
-        grade_points = credits * 0.6  # B -> 60% of credits
+        grade_points = credits * 0.6
         grade = 'B'
     elif marks >= 50:
-        grade_points = credits * 0.5  # B- -> 50% of credits
+        grade_points = credits * 0.5
         grade = 'B-'
     elif marks >= 40:
-        grade_points = credits * 0.4  # C -> 40% of credits
+        grade_points = credits * 0.4
         grade = 'C'
     else:
-        grade_points = 0  # NI -> No Earned Grade Points
+        grade_points = 0
         grade = 'NI'
     return grade_points, grade
 
@@ -48,34 +47,21 @@ def format_subject_table(subjects):
     ]
     return table_header + "\n".join(table_rows)
 
-# Handler for the /start command
+# Command handlers
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.message.from_user.id
-    user_data[user_id] = []  # Reset user data on start
+    user_data[user_id] = []
     await update.message.reply_text(
         "🎓 Welcome to the SGPA Calculator Bot!\n\n"
-        "Here's how I can help you:\n"
-        "1️⃣ Enter subject details one by one.\n"
-        "2️⃣ I will calculate your SGPA based on the data.\n\n"
-        "👉 **Input Format:**\n"
-        "Use the command:\n"
-        "`/collect_subject_details <subject_name> <credits> <marks_out_of_100>`\n\n"
-        "📝 **Example:**\n"
-        "`/collect_subject_details Math 4 85`\n\n"
-        "📌 Type `/calculate_sgpa` to compute your SGPA after entering all subjects.\n"
-        "Type `/cancel` at any time to restart."
+        "Use `/collect_subject_details <subject_name> <credits> <marks_out_of_100>` to add subject details.\n"
+        "Type `/calculate_sgpa` to compute your SGPA.\n"
+        "Type `/cancel` to restart."
     )
 
-# Handler to collect subject details (name, credits, marks)
 async def collect_subject_details(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.message.from_user.id
     if len(context.args) != 3:
-        await update.message.reply_text(
-            "⚠️ Incorrect input format. Please enter the details like this:\n"
-            "`/collect_subject_details <subject_name> <credits> <marks_out_of_100>`\n\n"
-            "📝 **Example:**\n"
-            "`/collect_subject_details Math 4 85`"
-        )
+        await update.message.reply_text("⚠️ Incorrect input format. Use `/collect_subject_details <subject_name> <credits> <marks_out_of_100>`.")
         return
 
     subject_name = context.args[0]
@@ -83,10 +69,7 @@ async def collect_subject_details(update: Update, context: ContextTypes.DEFAULT_
         credits = float(context.args[1])
         marks = float(context.args[2])
 
-        # Get Earned Grade Points based on marks and credits
         grade_points, grade = get_earned_grade_points(marks, credits)
-
-        # Store the subject data for the user
         user_data[user_id].append({
             'subject': subject_name,
             'credits': credits,
@@ -95,69 +78,46 @@ async def collect_subject_details(update: Update, context: ContextTypes.DEFAULT_
             'earned_grade_points': grade_points
         })
 
-        # Create and send the updated table
         table_message = format_subject_table(user_data[user_id])
-        await update.message.reply_text(
-            f"✅ Subject Added Successfully:\n\n{table_message}\n\n"
-            "Add another subject or type `/calculate_sgpa` to calculate your SGPA."
-        )
-
+        await update.message.reply_text(f"✅ Subject Added:\n\n{table_message}\n\nAdd more or type `/calculate_sgpa`.")
     except ValueError:
-        await update.message.reply_text(
-            "⚠️ Please ensure credits and marks are numeric values. Try again."
-        )
+        await update.message.reply_text("⚠️ Credits and marks must be numeric.")
 
-# Handler to calculate SGPA
 async def calculate_sgpa(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.message.from_user.id
-
     if user_id not in user_data or not user_data[user_id]:
-        await update.message.reply_text(
-            "⚠️ No subjects added yet. Use `/collect_subject_details` to add subjects."
-        )
+        await update.message.reply_text("⚠️ No subjects added. Use `/collect_subject_details` first.")
         return
 
-    total_grade_points = 0
-    total_credits = 0
+    total_grade_points = sum(s['earned_grade_points'] for s in user_data[user_id])
+    total_credits = sum(s['credits'] for s in user_data[user_id])
+    sgpa = (total_grade_points / total_credits if total_credits else 0) * 10
 
-    # Calculate total earned grade points and total credits
-    for subject in user_data[user_id]:
-        total_grade_points += subject['earned_grade_points']
-        total_credits += subject['credits']
-
-    # Calculate SGPA
-    sgpa = (total_grade_points / total_credits if total_credits else 0)*10
-
-    # Create and send the final table with SGPA
     table_message = format_subject_table(user_data[user_id])
-    await update.message.reply_text(
-        f"{table_message}\n\n🏆 **Your SGPA:** {sgpa:.2f}\n"
-        "🎓 Formula: Total Earned Grade Points ÷ Total Credits"
-    )
+    await update.message.reply_text(f"{table_message}\n\n🏆 **Your SGPA:** {sgpa:.2f}")
 
-# Handler to cancel the subject entry process
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.message.from_user.id
-    if user_id in user_data:
-        user_data[user_id] = []  # Clear user data if cancel is requested
-    await update.message.reply_text(
-        "🔄 Process canceled. You can start again by typing /start."
-    )
+    user_data[user_id] = []
+    await update.message.reply_text("🔄 Process canceled. Use /start to restart.")
 
 # Main function
 def main():
-    # Initialize the application
     application = Application.builder().token(TOKEN).build()
 
-    # Add command handlers
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("collect_subject_details", collect_subject_details))
     application.add_handler(CommandHandler("calculate_sgpa", calculate_sgpa))
     application.add_handler(CommandHandler("cancel", cancel))
 
-    # Start the bot
-    print("SGPA Calculation Bot is running...")
-    application.run_polling()
+    # Set webhook
+    application.run_webhook(
+        listen="0.0.0.0",
+        port=8443,
+        url_path=TOKEN,
+        webhook_url=f"{WEBHOOK_URL}/{TOKEN}"
+    )
+    print("Webhook configured and bot is running...")
 
 if __name__ == "__main__":
     main()
